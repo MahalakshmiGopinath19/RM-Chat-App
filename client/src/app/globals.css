@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0b141a;
+  --foreground: #e9edef;
+
+  --bg-primary: #0b141a;
+  --bg-secondary: #111b21;
+  --bg-tertiary: #202c33;
+
+  --text-primary: #e9edef;
+  --text-secondary: #8696a0;
+
+  --border-custom: #222d34;
+  --card-bg: #222d34;
+  
+  --scrollbar-thumb: rgba(255, 255, 255, 0.15);
+  --scrollbar-hover: rgba(255, 255, 255, 0.25);
+
+  /* WhatsApp bubble variables */
+  --whatsapp-sent: #005c4b;
+  --whatsapp-sent-text: #e9edef;
+  --whatsapp-received: #202c33;
+  --whatsapp-received-text: #e9edef;
+}
+
+html[data-theme='light'] {
+  --background: #f0f2f5;
+  --foreground: #111b21;
+
+  --bg-primary: #efeae2; /* wallpaper background */
+  --bg-secondary: #ffffff; /* sidebar */
+  --bg-tertiary: #f0f2f5; /* hover states */
+
+  --text-primary: #111b21;
+  --text-secondary: #667781;
+
+  --border-custom: #e9edef;
+  --card-bg: #ffffff;
+  
+  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  --scrollbar-hover: rgba(0, 0, 0, 0.25);
+
+  /* WhatsApp bubble variables */
+  --whatsapp-sent: #d9fdd3;
+  --whatsapp-sent-text: #111b21;
+  --whatsapp-received: #ffffff;
+  --whatsapp-received-text: #111b21;
+}
+
+@theme {
+  --color-indigo-650: #00a884;
+  --color-indigo-600: #00a884;
+  --color-indigo-500: #008069;
+  
+  /* WhatsApp bubble colors */
+  --color-whatsapp-sent: var(--whatsapp-sent);
+  --color-whatsapp-sent-text: var(--whatsapp-sent-text);
+  --color-whatsapp-received: var(--whatsapp-received);
+  --color-whatsapp-received-text: var(--whatsapp-received-text);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  
+  /* High contrast dynamic colors mapping */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-custom: var(--border-custom);
+  --color-card-bg: var(--card-bg);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+
+/* Glassmorphism Styles */
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-custom);
+}
+
+.glass-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-right: 1px solid var(--border-custom);
+}
+
+/* Smooth Transitions & Animations */
+.transition-all-300 {
+  transition: all 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+.chat-wallpaper {
+  background-color: var(--bg-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%239C92AC' fill-opacity='0.04'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10zm10 8c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm40 40c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z'/%3E%3C/g%3E%3C/svg%3E");
+}

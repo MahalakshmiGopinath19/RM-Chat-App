@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import {
+  getDepartments,
+  createDepartment,
+  updateDepartment,
+  assignDepartmentHead
+} from '../controllers/departmentController';
+import { authenticateJWT, requireAdmin } from '../middleware/auth';
+
+const router = Router();
+
+// Employee access
+router.get('/', authenticateJWT, getDepartments);
+
+// Admin-only access
+router.post('/', authenticateJWT, requireAdmin, createDepartment);
+router.put('/:id', authenticateJWT, requireAdmin, updateDepartment);
+router.post('/:id/head', authenticateJWT, requireAdmin, assignDepartmentHead);
+
+export default router;
