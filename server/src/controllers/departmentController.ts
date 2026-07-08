@@ -1,5 +1,7 @@
 import { Response } from 'express';
 import Department from '../models/Department';
+import User from '../models/User';
+import Chat from '../models/Chat';
 import { AuthRequest } from '../middleware/auth';
 import { logAudit } from '../utils/auditLogger';
 
@@ -32,6 +34,9 @@ export const createDepartment = async (req: AuthRequest, res: Response): Promise
       head: head || null
     });
     await dept.save();
+
+    // Auto-create department chat room
+    await Chat.create({ type: 'department', department: dept._id });
 
     await logAudit(
       'DEPARTMENT_CREATE',
@@ -98,6 +103,36 @@ export const assignDepartmentHead = async (req: AuthRequest, res: Response): Pro
     );
 
     res.status(200).json(dept);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error.', error: error.message });
+  }
+};
+
+export const deleteDepartment = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const dept = await Department.findById(id);
+    if (!dept) {
+      res.status(404).json({ message: 'Department not found.' });
+      return;
+    }
+    
+    await Department.findByIdAndDelete(id);
+    
+    // Unset department for any users belonging to it
+    await User.updateMany({ department: id }, { $set: { department: null } });
+    
+    // Delete associated chat
+    await Chat.findOneAndDelete({ type: 'department', department: id });
+
+    await logAudit(
+      'DEPARTMENT_DELETE',
+      req.user?._id || null,
+      `Admin deleted department: ${dept.name}`,
+      req
+    );
+
+    res.status(200).json({ message: 'Department deleted successfully.' });
   } catch (error: any) {
     res.status(500).json({ message: 'Server error.', error: error.message });
   }

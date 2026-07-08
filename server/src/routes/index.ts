@@ -9,6 +9,7 @@ import fileRoutes from './fileRoutes';
 import notificationRoutes from './notificationRoutes';
 import adminRoutes from './adminRoutes';
 import messageRoutes from './messageRoutes';
+import taskRoutes from './taskRoutes';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/announcements', announcementRoutes);
 router.use('/files', fileRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/admin', adminRoutes);
+router.use('/tasks', taskRoutes);
 
 export default router;

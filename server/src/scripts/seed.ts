@@ -9,6 +9,7 @@ import Announcement from '../models/Announcement';
 import AuditLog from '../models/AuditLog';
 import Notification from '../models/Notification';
 import File from '../models/File';
+import Task from '../models/Task';
 
 dotenv.config();
 
@@ -29,20 +30,25 @@ const runSeed = async () => {
     await AuditLog.deleteMany({});
     await Notification.deleteMany({});
     await File.deleteMany({});
+    await Task.deleteMany({});
 
     console.log('Creating Departments...');
     const deptDev = await Department.create({ name: 'Development', description: 'Engineering, Coding and Infrastructure' });
-    const deptMarketing = await Department.create({ name: 'Marketing', description: 'Brand, Design, PR and Campaigns' });
+    const deptDigitalMarketing = await Department.create({ name: 'Digital Marketing', description: 'Brand, Design, PR and Campaigns' });
     const deptHR = await Department.create({ name: 'Human Resources', description: 'Employee welfare, Hiring and Policy' });
-    const deptSales = await Department.create({ name: 'Sales', description: 'Enterprise sales, partnerships and customer acquisition' });
+    await Department.create({ name: 'Sales', description: 'Enterprise sales, partnerships and customer acquisition' });
+    await Department.create({ name: 'Video Editing', description: 'Video editing, post-production and motion graphics' });
+    await Department.create({ name: 'Interns', description: 'Internship program and trainees' });
+    await Department.create({ name: 'Operation Head', description: 'Operations and administrative head' });
+    await Department.create({ name: 'Manager', description: 'Management and executive department' });
 
     console.log('Creating Users...');
     // Admin
     const admin = await User.create({
       employeeId: 'EMP001',
       name: 'System Admin',
-      email: 'maha@company.com',
-      password: 'maha@123',
+      email: 'michaeldinesh@company.com',
+      password: 'michaeldinesh@123',
       role: 'admin',
       status: 'active'
     });
@@ -82,7 +88,7 @@ const runSeed = async () => {
       role: 'employee',
       status: 'active',
       department: deptDev._id
-    });
+    });   
 
     // Dev 2 (Inactive as a mock test)
     const dev2 = await User.create({
@@ -103,77 +109,34 @@ const runSeed = async () => {
       password: 'poorvika@123',
       role: 'employee',
       status: 'active',
-      department: deptMarketing._id
+      department: deptDigitalMarketing._id
     });
-    deptMarketing.head = mktHead._id;
-    await deptMarketing.save();
+    deptDigitalMarketing.head = mktHead._id;
+    await deptDigitalMarketing.save();
     console.log('Creating Collaboration Teams...');
 
-const teamWeb = await Team.create({
+await Team.create({
   name: 'Web Development Team',
   description: 'Responsible for designing, developing, maintaining, and optimizing the company’s websites, web applications, and digital platforms.',
   department: deptDev._id,
   members: [devHead._id, dev1._id, dev2._id]
 });
 
-const teamSocialMedia = await Team.create({
+await Team.create({
   name: 'Social Media Marketing Team',
   description: 'Responsible for managing social media platforms, creating engaging content, executing digital marketing campaigns, and growing brand awareness across online channels.',
-  department: deptMarketing._id,
+  department: deptDigitalMarketing._id,
   members: [mktHead._id, dev2._id]
 });
 
-const teamVideoEditing = await Team.create({
+await Team.create({
   name: 'Video Editing Team',
   description: 'Responsible for editing, enhancing, and producing high-quality video content for marketing campaigns, social media, brand promotions, and client projects.',
-  department: deptMarketing._id,
+  department: deptDigitalMarketing._id,
   members: [mktHead._id]
 }); 
 
-    // Create Chats for Departments
-    const chatDeptDev = await Chat.create({ type: 'department', department: deptDev._id });
-    await Chat.create({ type: 'department', department: deptMarketing._id });
-    await Chat.create({ type: 'department', department: deptHR._id });
-    await Chat.create({ type: 'department', department: deptSales._id });
 
-    // Create Chats for Teams
-    await Chat.create({ type: 'team', team: teamWeb._id });
-    await Chat.create({ type: 'team', team: teamSocialMedia._id });
-    await Chat.create({ type: 'team', team: teamVideoEditing._id });
-
-    console.log('Creating Direct Message Chat Seeds...');
-    // DM Chat between Dev Head and Developer 1
-    const directChat = await Chat.create({
-      type: 'direct',
-      participants: [devHead._id, dev1._id]
-    });
-
-    console.log('Creating Chat Messages Seeds...');
-    // Send a message in Dev Department Chat
-    await Message.create({
-      chat: chatDeptDev._id,
-      sender: devHead._id,
-      content: 'Welcome everyone to the official Development Department channel! Check out the announcement panel for coding standards.',
-      readBy: [{ user: devHead._id, readAt: new Date() }]
-    });
-
-    // Seed direct messages between Marcus and John
-    await Message.create({
-      chat: directChat._id,
-      sender: devHead._id,
-      content: 'Hey Shan, do you have updates on the authentication workflow integration?',
-      readBy: [{ user: devHead._id, readAt: new Date() }]
-    });
-
-    await Message.create({
-      chat: directChat._id,
-      sender: dev1._id,
-      content: 'Hi Maha, yes! The APIs are written and I am wiring them up on the React client. I will post it to Web Development Team channel once ready.',
-      readBy: [
-        { user: dev1._id, readAt: new Date() },
-        { user: devHead._id, readAt: new Date() }
-      ]
-    });
 
     console.log('Creating Announcement Seeds...');
     await Announcement.create({
@@ -193,6 +156,47 @@ const teamVideoEditing = await Team.create({
       sender: devHead._id
     });
 
+    console.log('Creating Task Seeds...');
+    await Task.create({
+      title: 'Admin User Management & Dashboard Panel',
+      description: 'Build and deploy the administrator panel for managing users, tracking user registration/status, and monitoring logins and logouts.',
+      priority: 'P1',
+      assignedTo: dev1._id,
+      assignedBy: devHead._id,
+      dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      status: 'in_progress'
+    });
+
+    await Task.create({
+      title: 'Real-time Sockets Messaging Engine',
+      description: 'Implement real-time bi-directional messaging, active user tracking, user presence toggles, and typing indicators using WebSockets.',
+      priority: 'P2',
+      assignedTo: dev2._id,
+      assignedBy: devHead._id,
+      dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+      status: 'todo'
+    });
+
+    await Task.create({
+      title: 'Secure Document Manager & File Sharing',
+      description: 'Develop centralized department and team document libraries with folder-level encryption and access control list policies.',
+      priority: 'P3',
+      assignedTo: dev1._id,
+      assignedBy: admin._id,
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      status: 'todo'
+    });
+
+    await Task.create({
+      title: 'Security Audits & Analytical PDF/Excel Reports',
+      description: 'Generate compliance auditing trails and enable exportable PDF and Excel spreadsheet exports of session and activity logs.',
+      priority: 'P4',
+      assignedTo: devHead._id,
+      assignedBy: admin._id,
+      dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+      status: 'completed'
+    });
+
     console.log('Creating Audit Log Seeds...');
     await AuditLog.create({
       action: 'SYSTEM_SEED',
@@ -204,7 +208,7 @@ const teamVideoEditing = await Team.create({
     console.log('=============================================');
     console.log('  DATABASE SEEDED SUCCESSFULLY!');
     console.log('=============================================');
-    console.log('  Admin Login: maha@company.com / maha@123');
+    console.log('  Admin Login: michaeldinesh@company.com / michaeldinesh@123');
     console.log('  Sandeep (Dev Lead): sandeepdev@company.com / sandeep@123');
     console.log('  Meena (HR Head): meenahr@company.com / meena@123');
     console.log('  Shan (Dev 1): shandev@company.com / shan@123');

@@ -11,6 +11,7 @@ export default function ChatRightPanel() {
   const threads = useSelector((state: RootState) => state.chat.threads);
   const currentUser = useSelector((state: RootState) => state.auth.user);
   const rightPanelOpen = useSelector((state: RootState) => state.ui.rightPanelOpen);
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
 
   const activeChat = threads.find(t => t._id === activeChatId);
   const [sharedFiles, setSharedFiles] = useState<any[]>([]);
@@ -47,7 +48,7 @@ export default function ChatRightPanel() {
   return (
     <div className="w-80 border-l border-border-custom bg-bg-secondary flex flex-col h-full shrink-0 overflow-y-auto">
       {/* Panel title */}
-      <div className="p-5 border-b border-border-custom flex items-center gap-3">
+      <div className="h-20 px-5 border-b border-border-custom flex items-center gap-3 shrink-0">
         <User className="w-5 h-5 text-indigo-400" />
         <h3 className="text-sm font-bold tracking-wider uppercase text-text-secondary">Details</h3>
       </div>
@@ -160,7 +161,7 @@ export default function ChatRightPanel() {
                     </div>
                   </div>
                   <a
-                    href={`http://localhost:5000/api/files/${file._id}/download`}
+                    href={`http://localhost:5000/api/files/${file._id}/download?token=${token}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-1 hover:bg-bg-tertiary rounded text-text-secondary hover:text-text-primary cursor-pointer"

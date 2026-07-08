@@ -11,6 +11,7 @@ import { Search, MessageSquare, User, FileText, Hash, Calendar, ArrowRight, Menu
 export default function SearchPanel() {
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.auth.user);
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
 
   const [activeSubTab, setActiveSubTab] = useState<'messages' | 'employees' | 'files' | 'groups'>('messages');
   const [keyword, setKeyword] = useState('');
@@ -249,7 +250,7 @@ export default function SearchPanel() {
                     </div>
                   </div>
                   <a
-                    href={`http://localhost:5000/api/files/${file._id}/download`}
+                    href={`http://localhost:5000/api/files/${file._id}/download?token=${token}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-bg-tertiary border border-border-custom rounded-lg hover:border-indigo-500 text-text-secondary hover:text-indigo-400 cursor-pointer"

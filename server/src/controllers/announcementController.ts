@@ -14,21 +14,21 @@ export const getAnnouncements = async (req: AuthRequest, res: Response): Promise
       return;
     }
 
-    // Find all teams this user is a member of
-    const userTeams = await Team.find({ members: req.user._id });
-    const teamIds = userTeams.map(t => t._id);
+    const query: any = {};
 
-    // Build matching query
-    // Show company-wide OR user's department OR user's teams
-    const query: any = {
-      $or: [
+    // Admins see all announcements. Regular employees only see company-wide or their department/team announcements.
+    if (req.user.role !== 'admin') {
+      const userTeams = await Team.find({ members: req.user._id });
+      const teamIds = userTeams.map(t => t._id);
+
+      query.$or = [
         { audienceType: 'company' },
         { audienceType: 'department', audienceId: req.user.department }
-      ]
-    };
+      ];
 
-    if (teamIds.length > 0) {
-      query.$or.push({ audienceType: 'team', audienceId: { $in: teamIds } });
+      if (teamIds.length > 0) {
+        query.$or.push({ audienceType: 'team', audienceId: { $in: teamIds } });
+      }
     }
 
     // Filter by publishDate <= now
@@ -47,7 +47,6 @@ export const getAnnouncements = async (req: AuthRequest, res: Response): Promise
 
     const announcements = await Announcement.find(query)
       .populate('sender', 'name email')
-      .populate('audienceId') // Populates either Department or Team
       .sort({ publishDate: -1 });
 
     res.status(200).json(announcements);

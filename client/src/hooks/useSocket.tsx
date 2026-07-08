@@ -9,7 +9,8 @@ import {
   updateMessageInChat,
   deleteMessageInChat,
   setTypingUsers,
-  removeTypingUser
+  removeTypingUser,
+  markMessagesAsRead
 } from '../store/slices/chatSlice';
 import { addNotification } from '../store/slices/notificationSlice';
 import { logOut } from '../store/slices/authSlice';
@@ -106,6 +107,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     socketInstance.on('user_status_change', (data: { userId: string; isOnline: boolean }) => {
       // Trigger status changes in chat participants or state
       console.log('[SOCKET] User status change:', data);
+    });
+
+    socketInstance.on('chat_read', (data: { chatId: string; userId: string }) => {
+      dispatch(markMessagesAsRead(data));
     });
 
     return () => {

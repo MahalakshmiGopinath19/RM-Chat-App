@@ -96,6 +96,24 @@ export const getChatMessages = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
+    // Mark all messages in this chat as read by current user
+    await Message.updateMany(
+      {
+        chat: chatId,
+        sender: { $ne: req.user._id },
+        'readBy.user': { $ne: req.user._id }
+      },
+      {
+        $addToSet: { readBy: { user: req.user._id, readAt: new Date() } }
+      }
+    );
+
+    // Broadcast chat_read socket event to notify other participants in real-time
+    const io = req.app.get('socketio');
+    if (io) {
+      io.to(`chat_${chatId}`).emit('chat_read', { chatId, userId: req.user._id });
+    }
+
     // Fetch messages (exclude thread replies, which will be loaded via a separate thread endpoint)
     const messages = await Message.find({ chat: chatId, parentMessageId: null })
       .populate('sender', 'name email employeeId avatar')

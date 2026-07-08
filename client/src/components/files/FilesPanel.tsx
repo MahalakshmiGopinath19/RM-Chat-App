@@ -10,6 +10,7 @@ import { FileText, Download, Upload, Search, History, Info, X, Menu } from 'luci
 export default function FilesPanel() {
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.auth.user);
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
   
   const [files, setFiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -197,7 +198,7 @@ export default function FilesPanel() {
                         <td className="p-5 text-right">
                           <div className="flex items-center justify-end gap-1.5">
                             <a
-                              href={`http://localhost:5000/api/files/${file._id}/download`}
+                              href={`http://localhost:5000/api/files/${file._id}/download?token=${token}`}
                               title="Download"
                               className="p-1.5 hover:bg-bg-tertiary text-text-secondary hover:text-text-primary rounded-lg cursor-pointer transition-colors"
                             >

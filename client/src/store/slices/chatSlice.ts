@@ -130,6 +130,16 @@ const chatSlice = createSlice({
         state.typingUsers[chatId] = state.typingUsers[chatId].filter(u => u.userId !== userId);
       }
     },
+    markMessagesAsRead: (state, action: PayloadAction<{ chatId: string; userId: string }>) => {
+      const { chatId, userId } = action.payload;
+      if (state.messages[chatId]) {
+        state.messages[chatId].forEach(msg => {
+          if (!msg.readBy.some(r => r.user === userId)) {
+            msg.readBy.push({ user: userId, readAt: new Date().toISOString() });
+          }
+        });
+      }
+    },
     setLoadingThreads: (state, action: PayloadAction<boolean>) => {
       state.loadingThreads = action.payload;
     },
@@ -148,6 +158,7 @@ export const {
   deleteMessageInChat,
   setTypingUsers,
   removeTypingUser,
+  markMessagesAsRead,
   setLoadingThreads,
   setLoadingMessages
 } = chatSlice.actions;

@@ -207,13 +207,13 @@ export default function ChatSidebar() {
       {/* Search Input & Filters */}
       <div className="p-4 border-b border-border-custom shrink-0 space-y-3">
         <div className="relative">
-          <Search className="absolute left-3.5 top-3 w-5 h-5 text-text-secondary/50" />
+          <Search className="absolute left-3.5 top-2.5 w-4.5 h-4.5 text-text-secondary/50" />
           <input
             type="text"
-            placeholder="Search or start new chat"
+            placeholder="Search or start new chat..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-bg-tertiary border border-border-custom rounded-lg pl-11 pr-3 py-2 text-sm text-text-primary placeholder-text-secondary/50 outline-none focus:border-indigo-550/30 transition-colors"
+            className="w-full bg-bg-primary border border-border-custom rounded-lg pl-10 pr-3 py-2 text-sm text-text-primary placeholder-text-secondary/50 outline-none focus:border-indigo-500/30 transition-colors"
           />
         </div>
         
@@ -223,10 +223,10 @@ export default function ChatSidebar() {
             <button
               key={type}
               onClick={() => setFilterType(type as any)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer border ${
+              className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer border ${
                 filterType === type
-                  ? 'bg-indigo-650/10 border-indigo-650 text-indigo-650'
-                  : 'bg-bg-tertiary border-border-custom text-text-secondary hover:text-text-primary'
+                  ? 'bg-indigo-600/10 border-indigo-500/30 text-indigo-400'
+                  : 'bg-bg-primary border-border-custom text-text-secondary hover:text-text-primary'
               }`}
             >
               {type}
@@ -236,7 +236,7 @@ export default function ChatSidebar() {
       </div>
 
       {/* Threads List */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+      <div className="flex-1 overflow-y-auto p-2 space-y-1">
         {loading && threads.length === 0 ? (
           <div className="flex items-center justify-center py-8">
             <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
@@ -252,18 +252,18 @@ export default function ChatSidebar() {
               <button
                 key={thread._id}
                 onClick={() => handleSelectThread(thread._id)}
-                className={`w-full text-left p-4 rounded-lg flex items-center gap-3.5 transition-all duration-200 cursor-pointer relative ${
+                className={`w-[calc(100%-16px)] mx-2 my-0.5 text-left p-3 rounded-xl flex items-center gap-3.5 transition-all duration-200 cursor-pointer relative ${
                   isActive
-                    ? 'bg-bg-tertiary border-l-4 border-indigo-650 text-text-primary shadow-sm font-semibold'
+                    ? 'bg-indigo-600/10 text-text-primary shadow-xs font-semibold'
                     : 'hover:bg-bg-tertiary text-text-secondary hover:text-text-primary'
                 }`}
               >
                 {/* Channel Icon or User Avatar */}
                 <div className="relative shrink-0">
                   {thread.type === 'direct' && meta.avatar ? (
-                    <img src={meta.avatar} alt="avatar" className="w-12 h-12 rounded-full border border-border-custom object-cover" />
+                    <img src={meta.avatar} alt="avatar" className="w-11 h-11 rounded-full border border-border-custom object-cover" />
                   ) : (
-                    <div className="w-12 h-12 bg-bg-tertiary border border-border-custom rounded-full flex items-center justify-center">
+                    <div className="w-11 h-11 bg-bg-tertiary border border-border-custom rounded-xl flex items-center justify-center">
                       {meta.icon}
                     </div>
                   )}
@@ -271,7 +271,7 @@ export default function ChatSidebar() {
                   {/* Online Dot */}
                   {thread.type === 'direct' && (
                     <span
-                      className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-bg-secondary ${
+                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-bg-secondary ${
                         meta.isOnline ? 'bg-emerald-500' : 'bg-slate-500'
                       }`}
                     ></span>
@@ -281,19 +281,19 @@ export default function ChatSidebar() {
                 {/* Details */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className="text-base font-bold truncate block">{meta.name}</span>
-                    <span className="text-xs text-text-secondary font-semibold shrink-0 ml-2">
+                    <span className="text-sm font-bold truncate block">{meta.name}</span>
+                    <span className="text-[10px] text-text-secondary font-semibold shrink-0 ml-2">
                       {thread.lastMessage
                         ? new Date(thread.lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                         : ''}
                     </span>
                   </div>
                   <div className="flex items-center justify-between mt-1">
-                    <span className="text-sm text-text-secondary truncate block pr-2 leading-tight">
+                    <span className="text-xs text-text-secondary truncate block pr-2 leading-tight">
                       {thread.lastMessage ? `${thread.lastMessage.sender.name}: ${thread.lastMessage.content}` : meta.sub}
                     </span>
                     {thread.unreadCount && thread.unreadCount > 0 ? (
-                      <span className="bg-indigo-650 text-[10px] text-white font-bold px-1.5 py-0.5 rounded-full min-w-[18px] h-[18px] flex items-center justify-center text-center shrink-0">
+                      <span className="bg-indigo-600 text-[10px] text-white font-bold px-1.5 py-0.5 rounded-full min-w-[18px] h-[18px] flex items-center justify-center text-center shrink-0">
                         {thread.unreadCount}
                       </span>
                     ) : null}
@@ -354,7 +354,7 @@ export default function ChatSidebar() {
                 <label className="block text-xs font-medium text-text-secondary mb-2">Group Name</label>
                 <input
                   type="text"
-                  placeholder="e.g. Project Apollo UI"
+                  placeholder="e.g. group name"
                   value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
                   className="w-full bg-bg-tertiary border border-border-custom text-sm text-text-primary rounded-lg p-2 outline-none focus:border-indigo-500"

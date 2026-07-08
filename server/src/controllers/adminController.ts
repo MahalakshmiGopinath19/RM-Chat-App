@@ -36,6 +36,7 @@ export const getSystemStats = async (_req: AuthRequest, res: Response): Promise<
     const onlineUsers = await User.countDocuments({ isOnline: true });
     const totalMessages = await Message.countDocuments();
     const totalChats = await Chat.countDocuments();
+    const onlineUsersList = await User.find({ isOnline: true }, 'name email employeeId avatar role').sort({ name: 1 });
 
     // Messages per day for the last 7 days
     const sevenDaysAgo = new Date();
@@ -86,7 +87,8 @@ export const getSystemStats = async (_req: AuthRequest, res: Response): Promise<
         totalUsers,
         onlineUsers,
         totalMessages,
-        totalChats
+        totalChats,
+        onlineUsersList
       },
       messageStats,
       deptStats

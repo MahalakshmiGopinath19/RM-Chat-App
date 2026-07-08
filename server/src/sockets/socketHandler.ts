@@ -188,6 +188,27 @@ export const socketHandler = (io: Server) => {
       }
     });
 
+    // Mark Chat Read Event (marks all messages in chat as read by this user)
+    socket.on('mark_chat_read', async (data: { chatId: string }) => {
+      try {
+        const { chatId } = data;
+        await Message.updateMany(
+          {
+            chat: chatId,
+            sender: { $ne: user._id },
+            'readBy.user': { $ne: user._id }
+          },
+          {
+            $addToSet: { readBy: { user: user._id, readAt: new Date() } }
+          }
+        );
+        
+        io.to(`chat_${chatId}`).emit('chat_read', { chatId, userId: user._id });
+      } catch (err) {
+        console.error('Error marking chat read via socket:', err);
+      }
+    });
+
     // Message reaction event
     socket.on('react_message', async (data: { messageId: string; emoji: string }) => {
       try {

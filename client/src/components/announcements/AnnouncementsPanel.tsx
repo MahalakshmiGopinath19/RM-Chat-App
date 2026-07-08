@@ -219,7 +219,7 @@ export default function AnnouncementsPanel() {
                   placeholder="e.g. Q3 Health Benefits Policy"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-bg-tertiary border border-border-custom text-text-primary rounded-lg p-3 outline-none focus:border-indigo-500"
+                  className="w-full bg-bg-primary border border-border-custom text-text-primary rounded-lg p-3 outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -231,7 +231,7 @@ export default function AnnouncementsPanel() {
                   placeholder="Enter details here..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full bg-bg-tertiary border border-border-custom text-text-primary rounded-lg p-3 outline-none focus:border-indigo-500"
+                  className="w-full bg-bg-primary border border-border-custom text-text-primary rounded-lg p-3 outline-none focus:border-indigo-500"
                 ></textarea>
               </div>
 
@@ -241,7 +241,7 @@ export default function AnnouncementsPanel() {
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
-                    className="w-full bg-bg-tertiary border border-border-custom text-text-primary rounded-lg p-3 outline-none focus:border-indigo-500"
+                    className="w-full bg-bg-primary border border-border-custom text-text-primary rounded-lg p-3 outline-none focus:border-indigo-500"
                   >
                     <option value="normal">Normal</option>
                     <option value="important">Important</option>
@@ -254,7 +254,7 @@ export default function AnnouncementsPanel() {
                   <select
                     value={audienceType}
                     onChange={(e) => setAudienceType(e.target.value)}
-                    className="w-full bg-bg-tertiary border border-border-custom text-text-primary rounded-lg p-2.5 outline-none focus:border-indigo-500"
+                    className="w-full bg-bg-primary border border-border-custom text-text-primary rounded-lg p-2.5 outline-none focus:border-indigo-500"
                   >
                     <option value="company">Company-wide</option>
                     <option value="department">Department</option>
@@ -272,7 +272,7 @@ export default function AnnouncementsPanel() {
                     value={audienceId}
                     onChange={(e) => setAudienceId(e.target.value)}
                     required
-                    className="w-full bg-bg-tertiary border border-border-custom text-text-primary rounded-lg p-2.5 outline-none focus:border-indigo-500"
+                    className="w-full bg-bg-primary border border-border-custom text-text-primary rounded-lg p-2.5 outline-none focus:border-indigo-500"
                   >
                     <option value="">Choose...</option>
                     {audienceType === 'department'
@@ -297,7 +297,7 @@ export default function AnnouncementsPanel() {
                     type="date"
                     value={publishDate}
                     onChange={(e) => setPublishDate(e.target.value)}
-                    className="w-full bg-bg-tertiary border border-border-custom text-text-primary rounded-lg p-2.5 outline-none focus:border-indigo-500"
+                    className="w-full bg-bg-primary border border-border-custom text-text-primary rounded-lg p-2.5 outline-none focus:border-indigo-500"
                   />
                 </div>
 
@@ -307,7 +307,7 @@ export default function AnnouncementsPanel() {
                     type="date"
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
-                    className="w-full bg-bg-tertiary border border-border-custom text-text-primary rounded-lg p-2.5 outline-none focus:border-indigo-500"
+                    className="w-full bg-bg-primary border border-border-custom text-text-primary rounded-lg p-2.5 outline-none focus:border-indigo-500"
                   />
                 </div>
               </div>

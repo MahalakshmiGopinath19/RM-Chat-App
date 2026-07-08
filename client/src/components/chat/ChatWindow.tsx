@@ -35,6 +35,7 @@ export default function ChatWindow() {
   const messagesMap = useSelector((state: RootState) => state.chat.messages);
   const typingUsers = useSelector((state: RootState) => state.chat.typingUsers);
   const rightPanelOpen = useSelector((state: RootState) => state.ui.rightPanelOpen);
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
 
   const activeChat = threads.find(t => t._id === activeChatId);
   const messages = activeChatId ? messagesMap[activeChatId] || [] : [];
@@ -71,8 +72,27 @@ export default function ChatWindow() {
     };
 
     fetchMessages();
+    
+    // Notify server we opened the chat
+    if (socketProps.socket) {
+      socketProps.socket.emit('mark_chat_read', { chatId: activeChatId });
+    }
+    
     setThreadParent(null); // Close thread side panel on chat change
-  }, [activeChatId, dispatch]);
+  }, [activeChatId, dispatch, socketProps.socket]);
+
+  // Mark new incoming messages as read if the chat is currently active
+  useEffect(() => {
+    if (!activeChatId || messages.length === 0 || !socketProps.socket) return;
+    
+    const lastMsg = messages[messages.length - 1];
+    const isIncoming = lastMsg.sender._id !== currentUser?._id;
+    const isUnreadByMe = !lastMsg.readBy?.some(r => r.user === currentUser?._id);
+    
+    if (isIncoming && isUnreadByMe) {
+      socketProps.socket.emit('mark_chat_read', { chatId: activeChatId });
+    }
+  }, [messages, activeChatId, currentUser, socketProps.socket]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -132,45 +152,33 @@ export default function ChatWindow() {
     }
   };
 
-  // Open thread panel
+  // Open Reply Thread
   const handleOpenThread = async (msg: ChatMessage) => {
     setThreadParent(msg);
     try {
-      const res = await apiClient.get(`/messages/${msg._id}/replies`);
-      setThreadReplies(res.data);
+      const res = await apiClient.get(`/chats/${activeChatId}/messages`);
+      const threadRepliesList = res.data.filter((m: ChatMessage) => m.parentMessageId === msg._id);
+      setThreadReplies(threadRepliesList);
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Listen for socket events to update thread replies live
-  useEffect(() => {
-    if (!socketProps.socket || !threadParent) return;
-
-    const handleNewSocketMessage = (msg: any) => {
-      if (msg.parentMessageId === threadParent._id) {
-        setThreadReplies(prev => [...prev, msg]);
-      }
-    };
-
-    socketProps.socket.on('message', handleNewSocketMessage);
-    return () => {
-      socketProps.socket?.off('message', handleNewSocketMessage);
-    };
-  }, [socketProps.socket, threadParent]);
-
-  // Send Thread Reply
-  const handleSendReply = (e: React.FormEvent) => {
+  // Handle send thread reply
+  const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!threadInput.trim() || !threadParent || !activeChatId) return;
+    if (!threadInput.trim() || !threadParent) return;
 
-    socketProps.sendMessage(
-      activeChatId,
-      threadInput,
-      undefined,
-      threadParent._id
-    );
-    setThreadInput('');
+    try {
+      const res = await apiClient.post(`/chats/${activeChatId}/messages`, {
+        content: threadInput,
+        threadParent: threadParent._id
+      });
+      setThreadReplies([...threadReplies, res.data]);
+      setThreadInput('');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Start Edit message
@@ -209,7 +217,7 @@ export default function ChatWindow() {
         <div className="lg:hidden absolute top-4 left-4">
           <button
             onClick={() => dispatch(toggleSidebar())}
-            className="p-2.5 bg-bg-secondary border border-border-custom rounded-xl text-text-secondary hover:text-text-primary cursor-pointer"
+            className="p-2.5 bg-bg-secondary border border-border-custom rounded-xl text-text-secondary hover:text-text-primary cursor-pointer animate-pulse"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -235,7 +243,7 @@ export default function ChatWindow() {
       <div className="flex-1 flex flex-col h-full min-w-0 relative">
         
         {/* Header */}
-        <div className="h-20 border-b border-border-custom flex items-center justify-between px-4 lg:px-6 bg-bg-tertiary shrink-0">
+        <div className="h-20 border-b border-border-custom flex items-center justify-between px-4 lg:px-6 bg-bg-secondary shrink-0">
           <div className="flex items-center gap-3.5 min-w-0">
             {/* Back button (Mobile only) */}
             <button
@@ -293,7 +301,7 @@ export default function ChatWindow() {
         </div>
 
         {/* Message Logs */}
-        <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4 chat-wallpaper">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4 bg-bg-primary chat-wallpaper">
           {loading ? (
             <div className="flex justify-center py-12">
               <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
@@ -313,7 +321,7 @@ export default function ChatWindow() {
                   {!isMe && (
                     <div className="shrink-0 w-12 h-12 rounded-lg bg-bg-secondary border border-border-custom flex items-center justify-center font-bold text-base text-indigo-400">
                       {msg.sender.avatar ? (
-                        <img src={msg.sender.avatar} alt="avatar" className="w-full h-full rounded-lg" />
+                        <img src={msg.sender.avatar} alt="avatar" className="w-full h-full rounded-lg object-cover" />
                       ) : (
                         msg.sender.name.charAt(0)
                       )}
@@ -331,10 +339,10 @@ export default function ChatWindow() {
 
                     {/* Chat Bubble card */}
                     <div
-                      className={`rounded-xl px-4 pt-3 pb-5.5 text-sm lg:text-base relative ${
+                      className={`px-4.5 py-3 pb-5.5 text-sm lg:text-base relative ${
                         isMe
-                          ? 'bg-whatsapp-sent text-whatsapp-sent-text rounded-tr-none shadow-sm'
-                          : 'bg-whatsapp-received text-whatsapp-received-text border border-border-custom/50 rounded-tl-none shadow-xs'
+                          ? 'bubble-sent text-whatsapp-sent-text'
+                          : 'bubble-received text-whatsapp-received-text border border-border-custom/80 shadow-xs'
                       }`}
                     >
                       {/* Editing Message input */}
@@ -371,12 +379,12 @@ export default function ChatWindow() {
                               {msg.attachments.map((file: any) => (
                                 <a
                                   key={file._id}
-                                  href={`http://localhost:5000/api/files/${file._id}/download`}
+                                  href={`http://localhost:5000/api/files/${file._id}/download?token=${token}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className={`flex items-center gap-2 p-3 rounded-lg text-sm border ${
+                                  className={`flex items-center gap-2 p-2 rounded-lg border text-xs max-w-xs ${
                                     isMe
-                                      ? 'bg-indigo-650/10 border-indigo-600/25 text-indigo-650 hover:bg-indigo-650/20'
+                                      ? 'bg-white/10 border-white/20 text-white hover:bg-white/15'
                                       : 'bg-bg-primary border-border-custom/50 text-indigo-650 hover:bg-bg-primary/80'
                                   } transition-colors`}
                                 >
@@ -446,7 +454,7 @@ export default function ChatWindow() {
                               <button
                                 onClick={() => deleteMessage(msg._id)}
                                 title="Delete message"
-                                className="p-1 hover:bg-bg-tertiary rounded text-rose-500 hover:text-rose-450 cursor-pointer"
+                                className="p-1 hover:bg-bg-tertiary rounded text-rose-500 hover:text-rose-455 cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -486,7 +494,7 @@ export default function ChatWindow() {
         )}
 
         {/* Input message form footer */}
-        <div className="p-4 border-t border-border-custom bg-bg-tertiary shrink-0">
+        <div className="p-4 border-t border-border-custom bg-bg-secondary shrink-0">
           <form onSubmit={handleSendMessage} className="space-y-2">
             {/* Attachment preview chip */}
             {uploadedFile && (
@@ -533,10 +541,9 @@ export default function ChatWindow() {
                 />
               </div>
 
-              {/* Submit button */}
               <button
                 type="submit"
-                className="w-11 h-11 bg-indigo-650 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md shadow-indigo-600/10"
+                className="p-3 bg-indigo-650 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-lg shadow-indigo-600/10 cursor-pointer hover:scale-105 shrink-0"
               >
                 <Send className="w-5 h-5" />
               </button>
@@ -545,16 +552,16 @@ export default function ChatWindow() {
         </div>
       </div>
 
-      {/* Side thread replies panel */}
+      {/* Reply Thread Drawer */}
       {threadParent && (
-        <div className="w-80 lg:w-96 border-l border-border-custom flex flex-col h-full bg-bg-secondary shrink-0 relative z-30">
-          <div className="h-20 border-b border-border-custom flex items-center justify-between px-4 bg-bg-tertiary">
-            <span className="text-sm font-bold text-text-primary tracking-wide">Thread Replies</span>
+        <div className="w-80 border-l border-border-custom bg-bg-secondary flex flex-col h-full shrink-0 z-30">
+          <div className="h-14 px-4 border-b border-border-custom flex items-center justify-between shrink-0">
+            <h4 className="text-sm font-bold text-text-primary">Message Thread</h4>
             <button
               onClick={() => setThreadParent(null)}
-              className="p-1 hover:bg-bg-tertiary rounded text-text-secondary hover:text-text-primary cursor-pointer"
+              className="text-text-secondary hover:text-text-primary p-1 rounded hover:bg-bg-tertiary cursor-pointer"
             >
-              <X className="w-4.5 h-4.5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
@@ -588,7 +595,7 @@ export default function ChatWindow() {
           </div>
 
           {/* Thread reply input */}
-          <div className="p-4 border-t border-border-custom bg-bg-tertiary">
+          <div className="p-4 border-t border-border-custom bg-bg-secondary">
             <form onSubmit={handleSendReply} className="flex gap-2">
               <input
                 type="text"

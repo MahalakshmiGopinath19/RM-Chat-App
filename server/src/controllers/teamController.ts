@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import Team from '../models/Team';
+import Chat from '../models/Chat';
 import { AuthRequest } from '../middleware/auth';
 import { logAudit } from '../utils/auditLogger';
 
@@ -29,6 +30,9 @@ export const createTeam = async (req: AuthRequest, res: Response): Promise<void>
       members: members || []
     });
     await team.save();
+
+    // Auto-create team chat room
+    await Chat.create({ type: 'team', team: team._id });
 
     await logAudit(
       'TEAM_CREATE',
@@ -102,6 +106,64 @@ export const removeTeamMember = async (req: AuthRequest, res: Response): Promise
     );
 
     res.status(200).json(team);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error.', error: error.message });
+  }
+};
+
+export const updateTeam = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { name, description, department, members } = req.body;
+
+    const team = await Team.findById(id);
+    if (!team) {
+      res.status(404).json({ message: 'Team not found.' });
+      return;
+    }
+
+    if (name) team.name = name;
+    if (description !== undefined) team.description = description;
+    if (department !== undefined) team.department = department || null;
+    if (members !== undefined) team.members = members;
+
+    await team.save();
+
+    await logAudit(
+      'TEAM_UPDATE',
+      req.user?._id || null,
+      `Admin updated team ID: ${id} (${team.name})`,
+      req
+    );
+
+    res.status(200).json(team);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error.', error: error.message });
+  }
+};
+
+export const deleteTeam = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const team = await Team.findById(id);
+    if (!team) {
+      res.status(404).json({ message: 'Team not found.' });
+      return;
+    }
+
+    await Team.findByIdAndDelete(id);
+
+    // Delete associated chat
+    await Chat.findOneAndDelete({ type: 'team', team: id });
+
+    await logAudit(
+      'TEAM_DELETE',
+      req.user?._id || null,
+      `Admin deleted team: ${team.name}`,
+      req
+    );
+
+    res.status(200).json({ message: 'Team deleted successfully.' });
   } catch (error: any) {
     res.status(500).json({ message: 'Server error.', error: error.message });
   }

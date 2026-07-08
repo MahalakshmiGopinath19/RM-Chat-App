@@ -10,7 +10,8 @@ type TabType =
   | 'notifications'
   | 'reports'
   | 'userManagement'
-  | 'settings';
+  | 'settings'
+  | 'tasks';
 
 interface UiState {
   activeTab: TabType;

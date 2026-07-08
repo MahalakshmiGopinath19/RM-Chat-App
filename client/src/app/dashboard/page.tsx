@@ -18,6 +18,7 @@ import ReportsPanel from '../../components/admin/ReportsPanel';
 import UserManagementPanel from '../../components/admin/UserManagementPanel';
 import SettingsPanel from '../../components/settings/SettingsPanel';
 import NotificationsPanel from '../../components/notifications/NotificationsPanel';
+import TasksPanel from '../../components/tasks/TasksPanel';
 import {
   MessageSquare,
   Megaphone,
@@ -31,7 +32,8 @@ import {
   Moon,
   Menu,
   ChevronLeft,
-  Bell
+  Bell,
+  CheckSquare
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -133,6 +135,7 @@ export default function Dashboard() {
       icon: <Bell className="w-5.5 h-5.5" />,
       badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : undefined
     },
+    { id: 'tasks', label: 'Priority Work', icon: <CheckSquare className="w-5.5 h-5.5" /> },
     { id: 'search', label: 'Global Search', icon: <Search className="w-5.5 h-5.5" /> },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5.5 h-5.5" /> }
   ];
@@ -173,6 +176,8 @@ export default function Dashboard() {
         return <UserManagementPanel />;
       case 'settings':
         return <SettingsPanel />;
+      case 'tasks':
+        return <TasksPanel />;
       default:
         return (
           <div className="flex-1 flex items-center justify-center text-sm text-text-secondary">
@@ -207,17 +212,17 @@ export default function Dashboard() {
       <div className={`
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50
-        w-20 border-r border-border-custom bg-bg-secondary flex flex-col h-full shrink-0
-        transition-transform duration-300 ease-in-out
+        w-64 border-r border-border-custom bg-bg-secondary flex flex-col h-full shrink-0
+        transition-all duration-350 ease-in-out
       `}>
-        {/* Profile Avatar at the top (WhatsApp style) */}
-        <div className="h-20 flex items-center justify-center border-b border-border-custom shrink-0">
+        {/* Profile Avatar & Info at the top */}
+        <div className="h-20 flex items-center px-4.5 border-b border-border-custom shrink-0 gap-3">
           <button
             onClick={() => {
               dispatch(setActiveTab('settings'));
               dispatch(setSidebarOpen(false));
             }}
-            className="w-11 h-11 rounded-full bg-indigo-650/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm cursor-pointer hover:scale-105 transition-transform overflow-hidden"
+            className="w-10 h-10 rounded-full bg-indigo-650/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm cursor-pointer hover:scale-105 transition-transform overflow-hidden shrink-0"
             title="Profile Settings"
           >
             {currentUser.avatar ? (
@@ -226,10 +231,14 @@ export default function Dashboard() {
               currentUser.name.charAt(0).toUpperCase()
             )}
           </button>
+          <div className="min-w-0 flex-1 text-left">
+            <h5 className="text-sm font-bold text-text-primary truncate leading-tight">{currentUser.name}</h5>
+            <span className="text-[10px] text-text-secondary uppercase font-semibold tracking-wider block mt-0.5">{currentUser.role}</span>
+          </div>
         </div>
 
         {/* Navigation list */}
-        <div className="flex-1 overflow-y-auto py-6 flex flex-col items-center gap-2 w-full">
+        <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-1 w-full">
           {menuItems.map(item => {
             const isActive = activeTab === item.id;
             return (
@@ -239,16 +248,16 @@ export default function Dashboard() {
                   dispatch(setActiveTab(item.id as TabType));
                   dispatch(setSidebarOpen(false));
                 }}
-                className={`w-full h-12 flex items-center justify-center relative cursor-pointer transition-all ${
+                className={`w-[calc(100%-16px)] mx-2 h-10 px-3 flex items-center gap-3 rounded-lg relative cursor-pointer transition-all ${
                   isActive
-                    ? 'bg-bg-tertiary text-indigo-650 border-l-4 border-indigo-650 shadow-xs font-semibold'
-                    : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary border-l-4 border-transparent'
+                    ? 'bg-indigo-600/10 text-indigo-400 font-semibold'
+                    : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'
                 }`}
-                title={item.label}
               >
-                {item.icon}
+                <div className="shrink-0">{item.icon}</div>
+                <span className="text-sm truncate font-medium">{item.label}</span>
                 {(item as any).badge !== undefined && (
-                  <span className="absolute top-2 right-4 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                  <span className="ml-auto bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
                     {(item as any).badge}
                   </span>
                 )}
@@ -259,7 +268,9 @@ export default function Dashboard() {
           {/* Admin separator and menu items if admin */}
           {currentUser.role === 'admin' && (
             <>
-              <div className="w-8 border-t border-border-custom my-2 shrink-0"></div>
+              <div className="px-4.5 pt-4 pb-2 text-[10px] uppercase font-bold tracking-wider text-text-secondary/50 shrink-0 text-left">
+                Administration
+              </div>
               {adminMenuItems.map(item => {
                 const isActive = activeTab === item.id;
                 return (
@@ -269,14 +280,14 @@ export default function Dashboard() {
                       dispatch(setActiveTab(item.id as TabType));
                       dispatch(setSidebarOpen(false));
                     }}
-                    className={`w-full h-12 flex items-center justify-center relative cursor-pointer transition-all ${
+                    className={`w-[calc(100%-16px)] mx-2 h-10 px-3 flex items-center gap-3 rounded-lg relative cursor-pointer transition-all ${
                       isActive
-                        ? 'bg-bg-tertiary text-indigo-650 border-l-4 border-indigo-650 shadow-xs font-semibold'
-                        : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary border-l-4 border-transparent'
+                        ? 'bg-indigo-600/10 text-indigo-400 font-semibold'
+                        : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'
                     }`}
-                    title={item.label}
                   >
-                    {item.icon}
+                    <div className="shrink-0">{item.icon}</div>
+                    <span className="text-sm truncate font-medium">{item.label}</span>
                   </button>
                 );
               })}
@@ -284,28 +295,33 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Theme Switcher & Logout (Vertical stack) */}
-        <div className="p-4 border-t border-border-custom flex flex-col items-center gap-4 shrink-0">
+        {/* Theme Switcher & Logout */}
+        <div className="p-4 border-t border-border-custom flex items-center justify-between gap-3 shrink-0">
           {/* Theme Toggler */}
           <button
             onClick={() => dispatch(toggleTheme())}
-            className="w-12 h-12 rounded-xl flex items-center justify-center text-text-secondary hover:bg-bg-tertiary hover:text-text-primary cursor-pointer transition-colors"
-            title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            className="flex items-center gap-2 text-xs font-semibold text-text-secondary hover:text-text-primary cursor-pointer transition-colors"
           >
             {theme === 'dark' ? (
-              <Sun className="w-5.5 h-5.5 text-amber-500" />
+              <>
+                <Sun className="w-5 h-5 text-amber-500" />
+                <span>Light Mode</span>
+              </>
             ) : (
-              <Moon className="w-5.5 h-5.5 text-indigo-500" />
+              <>
+                <Moon className="w-5 h-5 text-indigo-500" />
+                <span>Dark Mode</span>
+              </>
             )}
           </button>
 
           {/* Logout */}
           <button
             onClick={handleLogoutAction}
-            className="w-12 h-12 rounded-xl flex items-center justify-center text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer transition-colors"
+            className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-lg cursor-pointer transition-all flex items-center justify-center shrink-0"
             title="Sign Out"
           >
-            <LogOut className="w-5.5 h-5.5" />
+            <LogOut className="w-5 h-5" />
           </button>
         </div>
       </div>
